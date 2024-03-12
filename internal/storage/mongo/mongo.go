@@ -4,41 +4,42 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"go_db/config"
-	"go_db/internal/models"
 	"log/slog"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
+
+	"go_db/config"
+	"go_db/internal/models"
 )
 
-type PostgressStore struct {
+type MongoStore struct {
 	log  *slog.Logger
 	cl   *mongo.Client
 	coll *mongo.Collection
 }
 
-func GetStore(ctx context.Context, logger *slog.Logger) (*PostgressStore, error) {
+func GetStore(ctx context.Context, logger *slog.Logger) (*MongoStore, error) {
 	logger.Info("connecting DB mongo...")
 	client, err := mongo.Connect(ctx, options.Client().ApplyURI(config.GetMongoString()))
 	if err != nil {
 		return nil, err
 	}
 
-	i := PostgressStore{log: logger, cl: client}
+	i := MongoStore{log: logger, cl: client}
 	i.log.Info("DB mongo connected")
 	i.coll = i.cl.Database("Empl").Collection("Employee")
+
 	return &i, nil
 }
 
-func (i PostgressStore) GetConnection(ctx context.Context) (*sql.DB, error) {
-	//	i.pool.Get
-	//	conn, err := i.pool.Acquire(ctx)
+func (i MongoStore) GetConnection(ctx context.Context) (*sql.DB, error) {
 	return nil, errors.New("not supported")
 }
 
-func (i PostgressStore) Release(ctx context.Context) {
+func (i MongoStore) Release(ctx context.Context) {
+
 	err := i.cl.Disconnect(context.TODO())
 	if err != nil {
 		i.log.Error("DB mongo disconnect error:", slog.String("message", err.Error()))
@@ -47,7 +48,7 @@ func (i PostgressStore) Release(ctx context.Context) {
 	}
 }
 
-func (i PostgressStore) EmployeeCreate(ctx context.Context, empl models.Employee) (uint32, error) {
+func (i MongoStore) EmployeeCreate(ctx context.Context, empl models.Employee) (uint32, error) {
 	i.log.Debug("mongo:create ", slog.String("Name", empl.Name))
 	id64, err := i.coll.CountDocuments(ctx, bson.D{{}})
 	if err != nil {
@@ -63,13 +64,13 @@ func (i PostgressStore) EmployeeCreate(ctx context.Context, empl models.Employee
 	return empl.Id, nil
 }
 
-func (i PostgressStore) EmployeeGet(ctx context.Context, id uint32) (*models.Employee, error) {
+func (i MongoStore) EmployeeGet(ctx context.Context, id uint32) (*models.Employee, error) {
 	i.log.Debug("mongo:get ", slog.Any("ID", id))
 	var empl models.Employee
 	err := i.coll.FindOne(ctx, bson.D{{Key: "id", Value: id}}).Decode(&empl)
 	return &empl, err
 }
-func (i PostgressStore) EmployeeUpdate(ctx context.Context, empl models.Employee) error {
+func (i MongoStore) EmployeeUpdate(ctx context.Context, empl models.Employee) error {
 	i.log.Debug("mongo:update ", slog.Any("ID", empl.Id), slog.String("Name", empl.Name))
 
 	filter := bson.D{{Key: "id", Value: empl.Id}}
@@ -87,7 +88,7 @@ func (i PostgressStore) EmployeeUpdate(ctx context.Context, empl models.Employee
 	}
 	return nil
 }
-func (i PostgressStore) EmployeeDelete(ctx context.Context, id uint32) error {
+func (i MongoStore) EmployeeDelete(ctx context.Context, id uint32) error {
 	i.log.Debug("mongo:delete ", slog.Any("ID", id))
 	filter := bson.D{{Key: "id", Value: id}}
 	deleteResult, err := i.coll.DeleteOne(ctx, filter)
@@ -99,7 +100,7 @@ func (i PostgressStore) EmployeeDelete(ctx context.Context, id uint32) error {
 	}
 	return nil
 }
-func (i PostgressStore) EmployeeList(ctx context.Context) ([]*models.Employee, error) {
+func (i MongoStore) EmployeeList(ctx context.Context) ([]*models.Employee, error) {
 	i.log.Debug("mongo:list")
 	cursor, err := i.coll.Find(ctx, bson.D{{}})
 	if err != nil {

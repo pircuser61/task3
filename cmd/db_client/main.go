@@ -9,6 +9,7 @@ import (
 	"go_db/cmd/migrations"
 	"go_db/config"
 	"go_db/internal/models"
+	"go_db/internal/storage"
 
 	//dbPackage "go_db/internal/storage/postgress/sql"
 	//dbPackage "go_db/internal/storage/postgress/pgxpool"
@@ -16,6 +17,7 @@ import (
 	//dbPackage "go_db/internal/storage/postgress/sqlx"
 	//dbPackage "go_db/internal/storage/postgress/gorm"
 	dbPackage "go_db/internal/storage/mongo"
+	cachePackage "go_db/internal/storage/redis"
 )
 
 func main() {
@@ -33,11 +35,24 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
-	dbInstanse, err := dbPackage.GetStore(ctx, logger)
+	var dbInstanse, cacheInstance storage.Store
+	var err error
+	dbInstanse, err = dbPackage.GetStore(ctx, logger)
 	if err != nil {
 		logger.Error(err.Error())
 		return
 	}
+	defer dbInstanse.Release(ctx)
+
+	cacheInstance, err = cachePackage.GetStore(ctx, logger, dbInstanse)
+	if err != nil {
+		logger.Error(err.Error())
+		return
+	}
+	defer cacheInstance.Release(ctx)
+
+	dbInstanse = cacheInstance
+
 	conn, err := dbInstanse.GetConnection(ctx)
 	if err == nil {
 		err = migrations.MakeMigrations(conn)
@@ -45,8 +60,6 @@ func main() {
 	if err != nil {
 		logger.Error(err.Error())
 	}
-
-	defer dbInstanse.Release(ctx)
 
 	/*-------------------------------------------*/
 

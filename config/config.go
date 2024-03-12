@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"os"
+	"time"
 )
 
 const LogLevel = "Debug" /* Debug | Info */
@@ -28,3 +29,11 @@ func getEnv(name string, defaultValue string) string {
 	}
 	return defaultValue
 }
+
+const (
+	RedisAddr               = "localhost:6379"
+	RedisEmployeeDb         = 0
+	RedisPassword           = ""
+	RedisExpiration         = time.Minute * 1
+	RedisResponseExpiration = time.Second * 30
+)

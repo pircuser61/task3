@@ -29,7 +29,15 @@ func GetStore(ctx context.Context, logger *slog.Logger) (*PostgressStore, error)
 	if err != nil {
 		return nil, err
 	}
+
 	i := PostgressStore{log: logger, db: db}
+	/*
+		    DB.SetConnMaxIdleTime
+			db.SetConnMaxLifetime(time.Minute * 3)
+			db.SetMaxOpenConns(10)
+			db.SetMaxIdleConns(10)
+	*/
+
 	i.log.Info("DB postgress connected")
 	return &i, nil
 }
