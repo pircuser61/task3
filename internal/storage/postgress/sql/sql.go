@@ -42,6 +42,12 @@ func GetStore(ctx context.Context, logger *slog.Logger) (*PostgressStore, error)
 	return &i, nil
 }
 
+func GetMockStore(db *sql.DB, logger *slog.Logger) (*PostgressStore, error) {
+	logger.Info("Mocking DB postgress...")
+	i := PostgressStore{log: logger, db: db}
+	return &i, nil
+}
+
 func (i PostgressStore) GetConnection(_ context.Context) (*sql.DB, error) {
 	return i.db, nil
 }
@@ -55,8 +61,7 @@ func (i PostgressStore) EmployeeCreate(ctx context.Context, empl models.Employee
 	var id uint32
 	i.log.Debug("sql:create ", slog.String("Name", empl.Name))
 	/*
-		sqlResult, err := i.db.Exec("INSERT INTO employee (Name) VALUES ($1)",
-				empl.Name)
+		sqlResult, err := i.db.Exec(queries.QueryCreate, empl.Name)
 					// "github.com/lib/pq" : LastInsertId is not supported by this driver
 		id64, err = sqlResult.LastInsertId()
 		if err != nil {
