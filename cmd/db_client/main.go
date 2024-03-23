@@ -11,13 +11,15 @@ import (
 	"go_db/internal/models"
 	"go_db/internal/storage"
 
-	//dbPackage "go_db/internal/storage/postgress/sql"
+	dbPackage "go_db/internal/storage/postgress/sql"
 	//dbPackage "go_db/internal/storage/postgress/pgxpool"
 	//dbPackage "go_db/internal/storage/postgress/pgx"
 	//dbPackage "go_db/internal/storage/postgress/sqlx"
 	//dbPackage "go_db/internal/storage/postgress/gorm"
-	dbPackage "go_db/internal/storage/mongo"
-	cachePackage "go_db/internal/storage/redis"
+	//dbPackage "go_db/internal/storage/mongo"
+
+	//cachePackage "go_db/internal/storage/go-redis"
+	cachePackage "go_db/internal/storage/redigo"
 )
 
 func main() {
@@ -44,15 +46,6 @@ func main() {
 	}
 	defer dbInstanse.Release(ctx)
 
-	cacheInstance, err = cachePackage.GetStore(ctx, logger, dbInstanse)
-	if err != nil {
-		logger.Error(err.Error())
-		return
-	}
-	defer cacheInstance.Release(ctx)
-
-	dbInstanse = cacheInstance
-
 	conn, err := dbInstanse.GetConnection(ctx)
 	if err == nil {
 		err = migrations.MakeMigrations(conn)
@@ -61,6 +54,14 @@ func main() {
 		logger.Error(err.Error())
 	}
 
+	cacheInstance, err = cachePackage.GetStore(ctx, logger, dbInstanse)
+	if err != nil {
+		logger.Error(err.Error())
+		return
+	}
+	defer cacheInstance.Release(ctx)
+
+	dbInstanse = cacheInstance
 	/*-------------------------------------------*/
 
 	printList := func() {

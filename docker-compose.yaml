@@ -14,12 +14,11 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: example
     ports:
       - 27017:27017
- postgres:
-   image: postgres:latest
-   environment:
-     POSTGRES_DB: "${POSTGRES_DB:-postgres}"
-     POSTGRES_USER: "${POSTGRES_USER:-user}"
-     POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-1234}"
-   ports:
-     - "${POSTGRES_PORT:-5433}:5432"
-
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_DB: "${POSTGRES_DB:-postgres}"
+      POSTGRES_USER: "${POSTGRES_USER:-user}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-1234}"
+    ports:
+      - "${POSTGRES_PORT:-5433}:5432"

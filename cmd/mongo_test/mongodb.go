@@ -106,19 +106,18 @@ func main() {
 	printList(ctx, cursor, err)
 
 	fmt.Println("COLOR : RED")
-	filter = bson.D{{"props",
-		bson.D{{"$elemMatch", bson.D{{"val", "red"}, {"name", "color"}}}}}}
+	filter = bson.D{{Key: "props", Value: bson.D{{Key: "$elemMatch", Value: bson.D{{Key: "val", Value: "red"}, {Key: "name", Value: "color"}}}}}}
 	cursor, err = coll.Find(ctx, filter)
 	printList(ctx, cursor, err)
 
 	fmt.Println("COLOR : RED2")
-	filter = bson.D{{"props", bson.D{{"name", "color"}, {"val", "red"}}}}
+	filter = bson.D{{Key: "props", Value: bson.D{{Key: "name", Value: "color"}, {Key: "val", Value: "red"}}}}
 	cursor, err = coll.Find(ctx, filter)
 	printList(ctx, cursor, err)
 
 	fmt.Println("COLOR : RED2 FIND ONE & PROJECTION")
 	filter = bson.D{{Key: "name", Value: "kartoshka"}}
-	projection := bson.D{{"name", 1}}
+	projection := bson.D{{Key: "name", Value: 1}}
 	opts := options.FindOne().SetProjection(projection)
 	singleResult := coll.FindOne(ctx, filter, opts)
 	err = singleResult.Err()
@@ -131,7 +130,7 @@ func main() {
 	}
 
 	fmt.Println("COLOR : RED3 wrong order")
-	filter = bson.D{{"props", bson.D{{"val", "red"}, {"name", "color"}}}}
+	filter = bson.D{{Key: "props", Value: bson.D{{Key: "val", Value: "red"}, {Key: "name", Value: "color"}}}}
 	cursor, err = coll.Find(ctx, filter)
 	printList(ctx, cursor, err)
 

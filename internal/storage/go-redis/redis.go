@@ -33,7 +33,7 @@ func GetStore(ctx context.Context, logger *slog.Logger, dbStore storage.Store) (
 }
 
 func (i RedisStore) GetConnection(ctx context.Context) (*sql.DB, error) {
-	return nil, errors.New("not supported")
+	return nil, errors.New("redis:GetConnection not supported")
 }
 
 func (i RedisStore) Release(ctx context.Context) {

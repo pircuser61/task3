@@ -35,7 +35,7 @@ func GetStore(ctx context.Context, logger *slog.Logger) (*MongoStore, error) {
 }
 
 func (i MongoStore) GetConnection(ctx context.Context) (*sql.DB, error) {
-	return nil, errors.New("not supported")
+	return nil, errors.New("mongo: GetConnection not supported")
 }
 
 func (i MongoStore) Release(ctx context.Context) {

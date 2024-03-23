@@ -39,7 +39,7 @@ func GetStore(ctx context.Context, logger *slog.Logger) (*PostgressStore, error)
 func (i PostgressStore) GetConnection(ctx context.Context) (*sql.DB, error) {
 	//	i.pool.Get
 	//	conn, err := i.pool.Acquire(ctx)
-	return nil, errors.New("not supported")
+	return nil, errors.New("pgxpool: GetConnection not supported")
 }
 
 func (i PostgressStore) Release(ctx context.Context) {
