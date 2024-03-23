@@ -6,7 +6,8 @@ import (
 	"log/slog"
 	"os"
 
-	"go_db/cmd/migrations"
+	migrate_goose "go_db/cmd/migrations/goose"
+	migrate_migrate "go_db/cmd/migrations/migrate"
 	"go_db/config"
 	"go_db/internal/models"
 	"go_db/internal/storage"
@@ -48,9 +49,19 @@ func main() {
 
 	conn, err := dbInstanse.GetConnection(ctx)
 	if err == nil {
-		err = migrations.MakeMigrations(conn)
-	}
-	if err != nil {
+		logger.Debug("===== Migrations =====")
+		err = migrate_goose.MakeMigrations(conn)
+		if err != nil {
+			logger.Error(err.Error())
+		}
+		err = migrate_migrate.MakeMigrations(conn, logger)
+		if err != nil {
+			logger.Error(err.Error())
+		} else {
+			logger.Debug("Migrate: ok")
+		}
+
+	} else if err != nil {
 		logger.Error(err.Error())
 	}
 

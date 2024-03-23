@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"time"
 
 	"encoding/json"
 	"log/slog"
@@ -24,10 +25,15 @@ type RedisStore struct {
 
 func GetStore(ctx context.Context, logger *slog.Logger, dbStore storage.Store) (*RedisStore, error) {
 	rs := RedisStore{log: logger, db: dbStore}
-	conn, err := redis.DialContext(ctx, "tcp", config.RedisAddr)
+	opt := redis.DialConnectTimeout(10 * time.Second)
+	//conn := redis.DialTimeout("tcp", config.RedisAddr, 10 *time.Second)
+	//depricated
+
+	conn, err := redis.DialContext(ctx, "tcp", config.RedisAddr, opt)
 	if err != nil {
 		return nil, err
 	}
+
 	rs.conn = conn
 	rs.log.Debug("Redist connect ok")
 	return &rs, nil
