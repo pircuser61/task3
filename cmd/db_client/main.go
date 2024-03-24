@@ -17,8 +17,8 @@ import (
 	//dbPackage "go_db/internal/storage/postgress/pgx"
 	//dbPackage "go_db/internal/storage/postgress/sqlx"
 	//dbPackage "go_db/internal/storage/postgress/gorm"
-	dbPackage "go_db/internal/storage/postgress/go-pg"
-	//dbPackage "go_db/internal/storage/mongo"
+	//dbPackage "go_db/internal/storage/postgress/go-pg"
+	dbPackage "go_db/internal/storage/mongo"
 
 	//cachePackage "go_db/internal/storage/go-redis"
 	cachePackage "go_db/internal/storage/redigo"

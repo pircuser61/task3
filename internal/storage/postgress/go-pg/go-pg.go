@@ -13,6 +13,35 @@ import (
 	"go_db/internal/models"
 )
 
+/* CUSTOM TYPE EXAMPLE
+
+import (
+	"github.com/go-pg/pg/v10/types"
+)
+type Time struct {
+	time.Time
+}
+func (tm Time) AppendValue(b []byte, flags int) ([]byte, error)
+func (tm *Time) ScanValue(rd types.Reader, n int) error
+
+var _ types.ValueScanner = (*Time)(nil)
+var _ types.ValueAppender = (*Time)(nil)
+
+type Event struct {
+	Id   int
+	Time Time `pg:"type:time"`
+}
+
+func main() {
+	err := db.Model((*Event)(nil)).CreateTable(&orm.CreateTableOptions{
+		Temp: true,
+	})
+    evt := new(Event)
+	db.Model(&evt}).Insert()
+	err = db.Model(evt).Select()
+}
+*/
+
 type PostgressStore struct {
 	log *slog.Logger
 	db  *pg.DB

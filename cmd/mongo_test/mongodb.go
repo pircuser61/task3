@@ -140,15 +140,43 @@ func main() {
 	cursor, err = coll.Find(ctx, filter2)
 	printList(ctx, cursor, err)
 
+	fmt.Println("AGGREAGATE")
+	/*[{ $group: {
+			_id: "$name",
+			count: {
+				$sum: 1
+			}
+		}
+	  }]
+	*/
+	req := bson.A{
+		bson.D{
+			{"$group",
+				bson.D{
+					{"_id", "$name"},
+					{"count", bson.D{{"$sum", 1}}},
+				},
+			},
+		},
+	}
+	cursor, err = coll.Aggregate(ctx, req)
+	if err != nil {
+		fmt.Println("error:", err.Error())
+	} else {
+		for cursor.Next(ctx) {
+			fmt.Println(cursor.Current)
+		}
+	}
+
 	/* Transaction numbers are only allowed on a replica set member or mongos */
 	/* нужен набор реплик а не одиночный сервер что бы использовать транзакции */
-	err = transaction(ctx, cl)
+	/*err = transaction(ctx, cl)
 	if err != nil {
 		fmt.Println("transactoin err:", err.Error())
 	} else {
 		fmt.Println("transaction: OK")
 	}
-
+	*/
 }
 
 func transaction(ctx context.Context, cl *mongo.Client) error {
