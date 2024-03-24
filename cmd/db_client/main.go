@@ -12,11 +12,12 @@ import (
 	"go_db/internal/models"
 	"go_db/internal/storage"
 
-	dbPackage "go_db/internal/storage/postgress/sql"
+	//dbPackage "go_db/internal/storage/postgress/sql"
 	//dbPackage "go_db/internal/storage/postgress/pgxpool"
 	//dbPackage "go_db/internal/storage/postgress/pgx"
 	//dbPackage "go_db/internal/storage/postgress/sqlx"
 	//dbPackage "go_db/internal/storage/postgress/gorm"
+	dbPackage "go_db/internal/storage/postgress/go-pg"
 	//dbPackage "go_db/internal/storage/mongo"
 
 	//cachePackage "go_db/internal/storage/go-redis"
@@ -53,6 +54,8 @@ func main() {
 		err = migrate_goose.MakeMigrations(conn)
 		if err != nil {
 			logger.Error(err.Error())
+		} else {
+			logger.Debug("Goose: ok")
 		}
 		err = migrate_migrate.MakeMigrations(conn, logger)
 		if err != nil {
@@ -63,6 +66,7 @@ func main() {
 
 	} else if err != nil {
 		logger.Error(err.Error())
+		logger.Debug("===== Migrations skipped =====")
 	}
 
 	cacheInstance, err = cachePackage.GetStore(ctx, logger, dbInstanse)

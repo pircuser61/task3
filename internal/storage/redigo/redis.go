@@ -125,12 +125,16 @@ func (i RedisStore) EmployeeUpdate(ctx context.Context, empl models.Employee) er
 }
 
 func (i RedisStore) EmployeeDelete(ctx context.Context, id uint32) error {
-	i.log.Debug("redis:delete ", slog.Any("ID", id))
-
+	i.log.Debug("redis: DB.delete ", slog.Any("ID", id))
 	err := i.db.EmployeeDelete(ctx, id)
-	_, cachErr := i.conn.Do("DEL", fmt.Sprint(id))
 	if err != nil {
-		i.log.Error("Cache delete", slog.String("message", cachErr.Error()))
+		i.log.Error("redis: DB.delete", slog.String("message", err.Error()))
+	}
+
+	i.log.Debug("redis:delete ", slog.Any("ID", id))
+	_, cacheErr := i.conn.Do("DEL", fmt.Sprint(id))
+	if cacheErr != nil {
+		i.log.Error("Cache delete", slog.String("message", cacheErr.Error()))
 	}
 	return err
 }

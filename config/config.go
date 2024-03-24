@@ -8,14 +8,28 @@ import (
 
 const LogLevel = "Debug" /* Debug | Info */
 
+type PgConnectionOpt struct {
+	Dbname string
+	Host   string
+	Port   string
+	User   string
+	Passw  string
+}
+
+func GetConnectionOpt() PgConnectionOpt {
+	opt := PgConnectionOpt{}
+	opt.Dbname = getEnv("POSTGRES_DB", "empl")
+	opt.Host = getEnv("POSTGRES_HOST", "localhost")
+	opt.Port = getEnv("POSTGRES_PORT", "5433")
+	opt.User = getEnv("POSTGRES_USER", "user")
+	opt.Passw = getEnv("POSTGRES_PASSWORD", "1234")
+	return opt
+}
+
 func GetConnectionString() string {
-	dbname := getEnv("POSTGRES_DB", "empl")
-	host := getEnv("POSTGRES_HOST", "localhost")
-	port := getEnv("POSTGRES_PORT", "5433")
-	user := getEnv("POSTGRES_USER", "user")
-	passw := getEnv("POSTGRES_PASSWORD", "1234")
+	opt := GetConnectionOpt()
 	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
-		host, port, user, passw, dbname)
+		opt.Host, opt.Port, opt.User, opt.Passw, opt.Dbname)
 }
 
 func GetMongoString() string {
