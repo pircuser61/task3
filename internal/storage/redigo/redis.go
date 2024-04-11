@@ -29,7 +29,7 @@ func GetStore(ctx context.Context, logger *slog.Logger, dbStore storage.Store) (
 	//conn := redis.DialTimeout("tcp", config.RedisAddr, 10 *time.Second)
 	//depricated
 
-	conn, err := redis.DialContext(ctx, "tcp", config.RedisAddr, opt)
+	conn, err := redis.DialContext(ctx, "tcp", config.GetRedisAddr(), opt)
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +44,10 @@ func (i RedisStore) GetConnection(ctx context.Context) (*sql.DB, error) {
 }
 
 func (i RedisStore) Release(ctx context.Context) {
-	i.conn.Close()
+	err := i.conn.Close()
+	if err != nil {
+		i.log.Error("redigo close error", err)
+	}
 	i.log.Debug("cache release")
 }
 

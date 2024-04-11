@@ -18,7 +18,7 @@ type PgConnectionOpt struct {
 
 func GetConnectionOpt() PgConnectionOpt {
 	opt := PgConnectionOpt{}
-	opt.Dbname = getEnv("POSTGRES_DB", "empl")
+	opt.Dbname = getEnv("POSTGRES_DB", "Empl")
 	opt.Host = getEnv("POSTGRES_HOST", "localhost")
 	opt.Port = getEnv("POSTGRES_PORT", "5433")
 	opt.User = getEnv("POSTGRES_USER", "user")
@@ -44,10 +44,15 @@ func getEnv(name string, defaultValue string) string {
 	return defaultValue
 }
 
+func GetRedisAddr() string {
+	return getEnv("REDIS_ADDR", "localhost:6379")
+}
+
 const (
-	RedisAddr               = "localhost:6379"
 	RedisEmployeeDb         = 0
 	RedisPassword           = ""
 	RedisExpiration         = time.Minute * 1
 	RedisResponseExpiration = time.Second * 30
+
+	AppAddr = ":8080"
 )

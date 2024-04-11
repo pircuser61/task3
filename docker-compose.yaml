@@ -1,24 +1,53 @@
 version: "3.1"
+networks:
+  mynet:
 services:
   redis:
     image: "bitnami/redis:latest"
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
-    ports:
-      - "6379:6379"
-  mongo:
-    image: mongo
-    container_name: "mongo"
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: example
-    ports:
-      - 27017:27017
-  postgres:
+    #ports:
+    #  - 6379:6379
+    networks:
+      - mynet
+  pg:
     image: postgres:latest
     environment:
-      POSTGRES_DB: "${POSTGRES_DB:-postgres}"
       POSTGRES_USER: "${POSTGRES_USER:-user}"
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-1234}"
+      POSTGRES_DB: "Empl"
+    #ports:
+    #  - "${POSTGRES_PORT:-5433}:5432"
+    networks:
+      - mynet
+  app:
+    # image: iapp
+    # "build" позволяет задать путь к файлу Dockerfile,
+    # который будет использован в docker-compose build
+    build: #./path to dockerfile
+      dockerfile: ./app.dockerfile
+
+    # Команда, которую нужно запустить после создания образа.
+    #  command: python ./server.py
+
+    depends_on:
+      - redis
+      - pg
+    environment:
+      POSTGRES_HOST: pg
+      POSTGRES_PORT: "${POSTGRES_PORT:-5432}"
+      REDIS_ADDR: "redis:6379"
+    networks:
+      - mynet
     ports:
-      - "${POSTGRES_PORT:-5433}:5432"
+      - 81:8080
+    # restart: on-failure
+    restart: always
+  web:
+    image: nginx
+    depends_on:
+      - app
+    ports:
+      - 8081:80
+    volumes:
+      - D:/html:/usr/share/nginx/html

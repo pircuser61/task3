@@ -115,7 +115,7 @@ func main() {
 		fmt.Println("get:", ptrEmpl.Id, ptrEmpl.Name)
 	}
 
-	dbInstanse.EmployeeDelete(ctx, ux.Id)
+	err = dbInstanse.EmployeeDelete(ctx, ux.Id)
 	if err != nil {
 		fmt.Println("delete error:", err.Error())
 	}

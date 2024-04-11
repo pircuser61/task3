@@ -47,7 +47,10 @@ func (i PostgressStore) GetConnection(_ context.Context) (*sql.DB, error) {
 }
 
 func (i PostgressStore) Release(_ context.Context) {
-	i.db.Close()
+	err := i.db.Close()
+	if err != nil {
+		i.log.Error("sqlx close error", err)
+	}
 	i.log.Info("DB postgress disconnected")
 }
 
@@ -116,6 +119,6 @@ func (i PostgressStore) EmployeeList(_ context.Context) ([]*models.Employee, err
 	i.log.Debug("sqlx:list")
 	var result []*models.Employee
 
-	i.db.Select(&result, queries.QueryList)
-	return result, nil
+	err := i.db.Select(&result, queries.QueryList)
+	return result, err
 }

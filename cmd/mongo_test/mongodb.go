@@ -65,8 +65,11 @@ func main() {
 	coll := cl.Database("Empl").Collection("Products")
 
 	fmt.Println("list col", strings.Join(listCol, ","))
-	coll.Drop(ctx)
-
+	err = coll.Drop(ctx)
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 	brand1 := brand{Name: "Br1", Country: "USA"}
 	brand2 := brand{Name: "Br2", Country: "China"}
 
@@ -125,8 +128,12 @@ func main() {
 		fmt.Println(singleResult.Err().Error())
 	} else {
 		p4 := product{}
-		singleResult.Decode(&p4)
-		fmt.Println("FindOne:", p4)
+		err = singleResult.Decode(&p4)
+		if err != nil {
+			fmt.Println("singleResult.Decode() error:", err)
+		} else {
+			fmt.Println("FindOne:", p4)
+		}
 	}
 
 	fmt.Println("COLOR : RED3 wrong order")

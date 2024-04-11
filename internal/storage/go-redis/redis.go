@@ -25,7 +25,7 @@ type RedisStore struct {
 func GetStore(ctx context.Context, logger *slog.Logger, dbStore storage.Store) (*RedisStore, error) {
 	rs := RedisStore{log: logger, db: dbStore}
 	rs.cl = redis.NewClient(&redis.Options{
-		Addr:     config.RedisAddr,
+		Addr:     config.GetRedisAddr(),
 		DB:       config.RedisEmployeeDb,
 		Password: config.RedisPassword})
 	rs.log.Debug("Redist client ok")
@@ -37,7 +37,10 @@ func (i RedisStore) GetConnection(ctx context.Context) (*sql.DB, error) {
 }
 
 func (i RedisStore) Release(ctx context.Context) {
-	i.cl.Close()
+	err := i.cl.Close()
+	if err != nil {
+		i.log.Error("redigo close error", err)
+	}
 	i.log.Debug("cache release")
 }
 

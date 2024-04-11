@@ -3,6 +3,7 @@ package postgress_sql
 import (
 	"context"
 	"go_db/internal/models"
+	"math/rand"
 	"regexp"
 	"testing"
 
@@ -44,6 +45,13 @@ func TestCreate(t *testing.T) {
 			t.Error(err)
 		}
 	})
+}
+
+func BenchmarkFirst(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		rand.Int()
+	}
+
 }
 
 func TestGet(t *testing.T) {

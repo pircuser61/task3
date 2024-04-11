@@ -8,5 +8,7 @@ import (
 )
 
 func MakeMigrations(db *sql.DB) error {
-	return goose.Up(db, "./../../migrations/goose/")
+	/* При запуске в докере нужен путь вида ./migrations/goose/ */
+	/* я хз */
+	return goose.Up(db, "./migrations/goose/")
 }

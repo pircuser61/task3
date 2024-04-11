@@ -41,7 +41,10 @@ func (i PostgressStore) GetConnection(ctx context.Context) (*sql.DB, error) {
 }
 
 func (i PostgressStore) Release(ctx context.Context) {
-	i.conn.Close(ctx)
+	err := i.conn.Close(ctx)
+	if err != nil {
+		i.log.Error("pgx: close error", err)
+	}
 	i.log.Info("DB postgress disconnected")
 }
 

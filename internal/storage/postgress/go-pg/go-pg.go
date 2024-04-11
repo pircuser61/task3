@@ -72,11 +72,14 @@ func (i PostgressStore) GetConnection(_ context.Context) (*sql.DB, error) {
 }
 
 func (i PostgressStore) Release(_ context.Context) {
-	i.db.Close()
+	err := i.db.Close()
+	if err != nil {
+		i.log.Error("go-pg: close error", err)
+	}
 	i.log.Info("go-pg:Close")
 }
 
-func (i PostgressStore) EmployeeCreate(ctx context.Context, empl models.Employee) (uint32, error) {
+func (i PostgressStore) EmployeeCreate(ctx context.Context, empl models.Employee) (newiD uint32, err error) {
 
 	i.log.Debug("go-pg:create ", slog.String("Name", empl.Name))
 	tx, err := i.db.Begin()
@@ -84,16 +87,20 @@ func (i PostgressStore) EmployeeCreate(ctx context.Context, empl models.Employee
 		return 0, err
 	}
 	//defer tx.Rollback()
-	defer tx.Close() // Close calls Rollback if the tx has not already been committed or rolled back.
-
+	defer func() {
+		closeErr := tx.Close() // Close calls Rollback if the tx has not already been committed or rolled back.
+		if err == nil {
+			err = closeErr
+		}
+	}()
 	_, err = i.db.Model(&empl).Insert()
 	if err != nil {
 		return 0, err
 	}
 
 	if empl.Id > 0 {
-		tx.Commit()
-		return empl.Id, nil
+		err := tx.Commit()
+		return empl.Id, err
 	}
 	return 0, errors.New("empl_id == 0")
 }

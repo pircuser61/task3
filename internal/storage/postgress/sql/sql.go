@@ -29,6 +29,11 @@ func GetStore(ctx context.Context, logger *slog.Logger) (*PostgressStore, error)
 	if err != nil {
 		return nil, err
 	}
+	logger.Info("ping DB...")
+	err = db.Ping()
+	if err != nil {
+		return nil, err
+	}
 
 	i := PostgressStore{log: logger, db: db}
 	/*
@@ -38,7 +43,7 @@ func GetStore(ctx context.Context, logger *slog.Logger) (*PostgressStore, error)
 			db.SetMaxIdleConns(10)
 	*/
 
-	i.log.Info("DB postgress connected")
+	i.log.Info("sql:DB postgress connected")
 	return &i, nil
 }
 
@@ -53,7 +58,10 @@ func (i PostgressStore) GetConnection(_ context.Context) (*sql.DB, error) {
 }
 
 func (i PostgressStore) Release(_ context.Context) {
-	i.db.Close()
+	err := i.db.Close()
+	if err != nil {
+		i.log.Error("sql close error", err)
+	}
 	i.log.Info("DB postgress disconnected")
 }
 
@@ -71,18 +79,24 @@ func (i PostgressStore) EmployeeCreate(ctx context.Context, empl models.Employee
 	*/
 	tx, err := i.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
 	if err != nil {
+		i.log.Error("sql", slog.String("create error", err.Error()))
 		return 0, err
 	}
-	defer tx.Rollback()
+	defer func() {
+		err := tx.Rollback()
+		if err != nil {
+			// Что делать ?
+		}
+	}()
 
 	row := tx.QueryRowContext(ctx, queries.QueryCreate, empl.Name)
 	err = row.Scan(&id)
 	if err != nil {
 		return 0, err
 	}
-	tx.Commit()
+	err = tx.Commit()
 
-	return id, nil
+	return id, err
 }
 
 func (i PostgressStore) EmployeeGet(_ context.Context, id uint32) (*models.Employee, error) {
@@ -92,6 +106,7 @@ func (i PostgressStore) EmployeeGet(_ context.Context, id uint32) (*models.Emplo
 	err := row.Scan(&empl.Id, &empl.Name)
 	return &empl, err
 }
+
 func (i PostgressStore) EmployeeUpdate(_ context.Context, empl models.Employee) error {
 	i.log.Debug("sql:update ", slog.Any("ID", empl.Id), slog.String("Name", empl.Name))
 	sqlResult, err := i.db.Exec(queries.QueryUpdate,
@@ -108,6 +123,7 @@ func (i PostgressStore) EmployeeUpdate(_ context.Context, empl models.Employee) 
 	}
 	return err
 }
+
 func (i PostgressStore) EmployeeDelete(_ context.Context, id uint32) error {
 	i.log.Debug("sql:delete ", slog.Any("ID", id))
 	sqlResult, err := i.db.Exec(queries.QueryDelete, id)
@@ -123,15 +139,22 @@ func (i PostgressStore) EmployeeDelete(_ context.Context, id uint32) error {
 	}
 	return nil
 }
+
 func (i PostgressStore) EmployeeList(ctx context.Context) ([]*models.Employee, error) {
 	i.log.Debug("sql:list")
 	var result []*models.Employee
 	// rows, err := i.db.Query(ctx, queries.QueryList)
 	rows, err := i.db.QueryContext(ctx, queries.QueryList)
 	if err != nil {
+		i.log.Debug("sql", slog.String("list ERROR", err.Error()))
 		return nil, err
 	}
-	defer rows.Close()
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			i.log.Error("rows close error", err)
+		}
+	}()
 
 	for rows.Next() {
 		empl := models.Employee{}
